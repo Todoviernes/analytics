@@ -1,0 +1,7 @@
+# PostgreSQL
+# ------------------------------------------------------------------------------
+POSTGRES_HOST=postgres
+POSTGRES_PORT=5432
+POSTGRES_DB=analytics
+POSTGRES_USER=tKrsWKvqrNRTTmEHAgyFrDqpPWIxZBga
+POSTGRES_PASSWORD=dBYIiemRzCd6yTL2Qdwe4YVyKzRoMYPaskphX4QaYwRTtcih9Q7rIt20NQ6D5CBi

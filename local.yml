@@ -1,0 +1,109 @@
+version: '3'
+
+volumes:
+  analytics_local_postgres_data: {}
+  analytics_local_postgres_data_backups: {}
+
+services:
+  django: &django
+    build:
+      context: .
+      dockerfile: ./compose/local/django/Dockerfile
+    image: analytics_local_django
+    container_name: analytics_local_django
+    depends_on:
+      - postgres
+      - redis
+      - mailpit
+    volumes:
+      - .:/app:z
+    env_file:
+      - ./.envs/.local/.django
+      - ./.envs/.local/.postgres
+    ports:
+      - '8000:8000'
+    command: /start
+
+  postgres:
+    build:
+      context: .
+      dockerfile: ./compose/production/postgres/Dockerfile
+    image: analytics_production_postgres
+    container_name: analytics_local_postgres
+    volumes:
+      - analytics_local_postgres_data:/var/lib/postgresql/data
+      - analytics_local_postgres_data_backups:/backups
+    env_file:
+      - ./.envs/.local/.postgres
+
+  docs:
+    image: analytics_local_docs
+    container_name: analytics_local_docs
+    build:
+      context: .
+      dockerfile: ./compose/local/docs/Dockerfile
+    env_file:
+      - ./.envs/.local/.django
+    volumes:
+      - ./docs:/docs:z
+      - ./config:/app/config:z
+      - ./analytics:/app/analytics:z
+    ports:
+      - '9000:9000'
+    command: /start-docs
+
+  mailpit:
+    image: axllent/mailpit:v1.8
+    container_name: analytics_local_mailpit
+    ports:
+      - "8025:8025"
+
+  redis:
+    image: redis:6
+    container_name: analytics_local_redis
+
+  celeryworker:
+    <<: *django
+    image: analytics_local_celeryworker
+    container_name: analytics_local_celeryworker
+    depends_on:
+      - redis
+      - postgres
+      - mailpit
+    ports: []
+    command: /start-celeryworker
+
+  celerybeat:
+    <<: *django
+    image: analytics_local_celerybeat
+    container_name: analytics_local_celerybeat
+    depends_on:
+      - redis
+      - postgres
+      - mailpit
+    ports: []
+    command: /start-celerybeat
+
+  flower:
+    <<: *django
+    image: analytics_local_flower
+    container_name: analytics_local_flower
+    ports:
+      - '5555:5555'
+    command: /start-flower
+
+  node:
+    build:
+      context: .
+      dockerfile: ./compose/local/node/Dockerfile
+    image: analytics_local_node
+    container_name: analytics_local_node
+    depends_on:
+      - django
+    volumes:
+      - .:/app:z
+      # http://jdlm.info/articles/2016/03/06/lessons-building-node-app-docker.html
+      - /app/node_modules
+    command: npm run dev
+    ports:
+      - '3000:3000'

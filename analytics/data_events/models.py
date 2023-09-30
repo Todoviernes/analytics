@@ -11,12 +11,30 @@ class Event(models.Model):
     url = models.URLField()
     utm_source = models.CharField(max_length=255, blank=True)
     utm_medium = models.CharField(max_length=255, blank=True)
+    session_id = models.CharField(max_length=255)
+
+    def __str__(self):
+        if self.user_id:
+            return f"{self.user_id} - {self.event_type} - {self.url}"
+        else:
+            return f"{self.session_id} - {self.event_type} - {self.url}"
 
 
 class Purchase(models.Model):
-    user_id = models.CharField(max_length=255)
+    user_id = models.CharField(max_length=255, null=True, blank=True)
     timestamp = models.DateTimeField(auto_now_add=True)
-    product_id = models.CharField(max_length=255)
+    product_id = models.CharField(max_length=255, null=True, blank=True)
     amount = models.FloatField()
     utm_source = models.CharField(max_length=255, blank=True)
     utm_medium = models.CharField(max_length=255, blank=True)
+    session_id = models.CharField(max_length=255, null=True, blank=True)
+
+    def __str__(self):
+        if self.user_id:
+            return f"{self.user_id} - {self.product_id} - {self.utm_medium}"
+        else:
+            return f"{self.session_id} - {self.product_id} - {self.utm_medium}"
+
+    def Meta(self):
+        verbose_name_plural = "Purchases"
+        Verbose_name = "Purchase"

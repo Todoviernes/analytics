@@ -34,7 +34,3 @@ class Purchase(models.Model):
             return f"{self.user_id} - {self.product_id} - {self.utm_medium}"
         else:
             return f"{self.session_id} - {self.product_id} - {self.utm_medium}"
-
-    def Meta(self):
-        verbose_name_plural = "Purchases"
-        Verbose_name = "Purchase"

@@ -104,3 +104,169 @@ Bootstrap v5 is installed using npm and customised by tweaking your variables in
 You can find a list of available variables [in the bootstrap source](https://github.com/twbs/bootstrap/blob/v5.1.3/scss/_variables.scss), or get explanations on them in the [Bootstrap docs](https://getbootstrap.com/docs/5.1/customize/sass/).
 
 Bootstrap's javascript as well as its dependencies are concatenated into a single file: `static/js/vendors.js`.
+
+## JS Implementation
+
+traking.js
+
+```js
+(function () {
+  const API_ENDPOINT = 'https://YOUR_DJANGO_DOMAIN'; // Replace with your Django backend URL
+
+  let sessionId = getCookie('session_id');
+  if (!sessionId) {
+    sessionId = generateUUID();
+    setCookie('session_id', sessionId, 365); // Set for 1 year
+  }
+
+  // Function to track generic events
+  window.trackEvent = function (eventType, url = window.location.href) {
+    const data = {
+      session_id: sessionId,
+      event_type: eventType,
+      url: url,
+      utm_source: getParameterByName('utm_source') || '',
+      utm_medium: getParameterByName('utm_medium') || '',
+    };
+    sendDataToServer(`${API_ENDPOINT}/capture_event/`, data);
+  };
+
+  // Function to track purchases
+  window.trackPurchase = function (productId, amount) {
+    const data = {
+      session_id: sessionId,
+      product_id: productId,
+      amount: amount,
+      utm_source: getParameterByName('utm_source') || '',
+      utm_medium: getParameterByName('utm_medium') || '',
+    };
+    sendDataToServer(`${API_ENDPOINT}/capture_purchase/`, data);
+  };
+
+  function sendDataToServer(endpoint, data) {
+    fetch(endpoint, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8',
+      },
+      body: new URLSearchParams(data).toString(),
+    });
+  }
+
+  function getCookie(name) {
+    let value = '; ' + document.cookie;
+    let parts = value.split('; ' + name + '=');
+    if (parts.length === 2) return parts.pop().split(';').shift();
+  }
+
+  function setCookie(name, value, days) {
+    let expires = '';
+    if (days) {
+      let date = new Date();
+      date.setTime(date.getTime() + days * 24 * 60 * 60 * 1000);
+      expires = '; expires=' + date.toUTCString();
+    }
+    document.cookie = name + '=' + (value || '') + expires + '; path=/';
+  }
+
+  function generateUUID() {
+    return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(
+      /[xy]/g,
+      function (c) {
+        const r = (Math.random() * 16) | 0,
+          v = c === 'x' ? r : (r & 0x3) | 0x8;
+        return v.toString(16);
+      },
+    );
+  }
+
+  function getParameterByName(name, url = window.location.href) {
+    name = name.replace(/[\[\]]/g, '\\$&');
+    const regex = new RegExp('[?&]' + name + '(=([^&#]*)|&|#|$)'),
+      results = regex.exec(url);
+    if (!results) return null;
+    if (!results[2]) return '';
+    return decodeURIComponent(results[2].replace(/\+/g, ' '));
+  }
+})();
+```
+
+### Usage on the External Website
+
+1. Embed the Script:
+   Include the `tracking.js` script on every page of your external website where you want to track events or purchases:
+
+```html
+<script src="path_to_your_scripts/tracking.js"></script>
+```
+
+2. Send Events:
+   Wherever you want to track an event or a purchase on the external site, use the respective functions:
+
+```js
+// Tracking a page view
+trackEvent('page_view');
+
+// Tracking a purchase
+trackPurchase('product123', 99.99);
+```
+
+Replace `YOUR_DJANGO_DOMAIN` with your actual Django backend domain in the tracking.js. This setup should now allow you to capture both events and purchases on an external site and send the data to your Django analytics system.
+
+## How it works the JS Events
+
+#### trackEvent function
+
+```js
+trackEvent('page_view');
+```
+
+Here's what this function does:
+
+eventType: Represents the type of event being tracked, like 'page_view', 'button_click', etc. This is a required argument that you provide when calling the function.
+
+url: By default, it captures the current page's URL. This can be helpful to know on which page the event occurred. If you want to manually specify a different URL, you can provide it as a second argument.
+
+The function also captures UTM parameters (utm_source, utm_medium, etc.) from the URL, which are commonly used for campaign tracking. These parameters might look like https://example.com/?utm_source=google&utm_medium=cpc.
+
+### trackPurchase Function
+
+Here's the breakdown:
+
+**productId:** Represents the ID or identifier of the product that was purchased. This is a required argument.
+
+**amount:** Represents the amount or price of the product. This is also a required argument.
+
+Similar to **trackEvent**, this function also captures UTM parameters from the URL
+
+### Getting the required data
+
+1. UTM Parameters: UTM (Urchin Tracking Module) parameters are five variants of URL parameters used by marketers to track the effectiveness of online marketing campaigns. They typically look like this in URLs: ?utm_source=source_name&utm_medium=medium_name.
+   The JavaScript function getParameterByName is responsible for extracting these parameters from the current page's URL.
+
+2. Current Page URL: This is captured using window.location.href in JavaScript. It gives the entire URL of the current page.
+
+3. Session ID: This is a unique identifier for a user's session. The function `getCookie("session_id")` tries to fetch an existing session ID from the user's cookies. If it doesn't find one, it generates a new session ID using generateUUID and sets it as a cookie. This helps in tracking a user's journey through multiple events and actions on the site.
+
+## How to Implement
+
+1. Embed the Tracking Script: Firstly, you'll embed the provided tracking.js on every page you want to track.
+2. Track Events:
+
+- On a page where you want to track views, you can add the line trackEvent('page_view'); within a `<script>` tag or in your page's JavaScript file.
+- For actions like button clicks, you'd use event listeners:
+
+```js
+document.getElementById('buyButton').addEventListener('click', function () {
+  trackEvent('button_click');
+});
+```
+
+3. Track Purchases: On pages or scripts that run after a successful purchase, you'd use the `trackPurchase` function with the relevant product ID and amount:
+
+```js
+// Example after a successful purchase
+trackPurchase('productABC', 120.5);
+```
+
+By following these steps, you'll capture user interactions and their journey on your site, from the landing page (potentially with UTM parameters for campaign tracking) to possible actions and purchases.

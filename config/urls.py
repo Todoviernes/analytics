@@ -32,15 +32,13 @@ urlpatterns += [
         name="api-docs",
     ),
 ]
-# curl -X POST -d "event_type=click&user_id=user123&url=https://example.com/some-page&utm_source=google&utm_medium=ads" http://127.0.0.1:8000/data_events/capture_event/
-# curl -X POST -d "user_id=user123&product_id=product456&amount=49.99&utm_source=google&utm_medium=ads" http://127.0.0.1:8000/data_events/capture_purchase/
 
 # curl -X POST http://127.0.0.1:8000/data_events/capture_purchase/ \
-#      -d "session_id=12345678-abcd-1234-abcd-1234567890ab&product_id=prod123&amount=99.99&utm_source=source_example&utm_medium=medium_example"
+#      -d "session_id=12345678-abcd-1234-abcd-1234567890ab&product_id=prod123&amount=99.99&utm_source=source_example&utm_medium=medium_example" # noqa
 
 # curl -X POST http://127.0.0.1:8000/data_events/capture_event/ \
 #      -H "Content-Type: application/x-www-form-urlencoded" \
-#      -d "session_id=12345678-abcd-1234-abcd-1234567890ab&event_type=page_view&url=https%3A%2F%2Fexample.com%2Fsomepage&utm_source=google&utm_medium=cpc"
+#      -d "session_id=12345678-abcd-1234-abcd-1234567890ab&event_type=page_view&url=https%3A%2F%2Fexample.com%2Fsomepage&utm_source=google&utm_medium=cpc" # noqa
 
 
 if settings.DEBUG:

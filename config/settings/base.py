@@ -86,6 +86,7 @@ THIRD_PARTY_APPS = [
 
 LOCAL_APPS = [
     "analytics.users",
+    "analytics.data_events",
     # Your stuff: custom apps go here
 ]
 # https://docs.djangoproject.com/en/dev/ref/settings/#installed-apps

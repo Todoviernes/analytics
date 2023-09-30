@@ -111,12 +111,13 @@ traking.js
 
 ```js
 (function () {
-  const API_ENDPOINT = 'https://YOUR_DJANGO_DOMAIN'; // Replace with your Django backend URL
+  const API_ENDPOINT = 'http://localhost:3000'; // Replace with your Django backend URL
 
   let sessionId = getCookie('session_id');
   if (!sessionId) {
     sessionId = generateUUID();
     setCookie('session_id', sessionId, 365); // Set for 1 year
+    // setCookie('_ur', 'oelooooo', 365); // Set for 1 year
   }
 
   // Function to track generic events
@@ -125,10 +126,11 @@ traking.js
       session_id: sessionId,
       event_type: eventType,
       url: url,
-      utm_source: getParameterByName('utm_source') || '',
+      utm_source: getParameterByName('utm_source') || 'organic',
       utm_medium: getParameterByName('utm_medium') || '',
+      user_id: getUserId() || '',
     };
-    sendDataToServer(`${API_ENDPOINT}/capture_event/`, data);
+    sendDataToServer(`${API_ENDPOINT}/data_events/capture_event/`, data);
   };
 
   // Function to track purchases
@@ -137,10 +139,10 @@ traking.js
       session_id: sessionId,
       product_id: productId,
       amount: amount,
-      utm_source: getParameterByName('utm_source') || '',
+      utm_source: getParameterByName('utm_source') || 'organic',
       utm_medium: getParameterByName('utm_medium') || '',
     };
-    sendDataToServer(`${API_ENDPOINT}/capture_purchase/`, data);
+    sendDataToServer(`${API_ENDPOINT}/data_events/capture_purchase/`, data);
   };
 
   function sendDataToServer(endpoint, data) {
@@ -178,6 +180,10 @@ traking.js
         return v.toString(16);
       },
     );
+  }
+  function getUserId() {
+    userId = getCookie('_ur');
+    return userId;
   }
 
   function getParameterByName(name, url = window.location.href) {

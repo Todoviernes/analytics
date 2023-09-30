@@ -4,7 +4,7 @@ from django.db import models
 
 
 class Event(models.Model):
-    TYPE_CHOICES = [('page_view', 'Page View'), ('click', 'Click')]
+    TYPE_CHOICES = [("page_view", "Page View"), ("click", "Click")]
     event_type = models.CharField(max_length=100, choices=TYPE_CHOICES)
     user_id = models.CharField(max_length=255)
     timestamp = models.DateTimeField(auto_now_add=True)

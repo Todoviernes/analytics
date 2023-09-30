@@ -12,6 +12,7 @@ class EventCaptureView(View):
         # Get the session ID, event type, URL, and UTM source and medium from the POST request
         session_id = request.POST.get("session_id")
         event_type = request.POST.get("event_type")
+        user_id = request.POST.get("user_id", "")
         url = request.POST.get("url")
         utm_source = request.POST.get("utm_source", "")
         utm_medium = request.POST.get("utm_medium", "")
@@ -23,6 +24,7 @@ class EventCaptureView(View):
             url=url,
             utm_source=utm_source,
             utm_medium=utm_medium,
+            user_id=user_id,
         )
 
         # Return a success response
@@ -38,6 +40,7 @@ class PurchaseCaptureView(View):
         amount = float(request.POST.get("amount"))
         utm_source = request.POST.get("utm_source", "")
         utm_medium = request.POST.get("utm_medium", "")
+        user_id = request.POST.get("user_id", "")
 
         # Create a new Purchase object with the captured data
         Purchase.objects.create(
@@ -46,6 +49,7 @@ class PurchaseCaptureView(View):
             amount=amount,
             utm_source=utm_source,
             utm_medium=utm_medium,
+            user_id=user_id,
         )
 
         # Return a success response

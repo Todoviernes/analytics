@@ -111,12 +111,13 @@ traking.js
 
 ```js
 (function () {
-  const API_ENDPOINT = 'https://YOUR_DJANGO_DOMAIN'; // Replace with your Django backend URL
+  const API_ENDPOINT = "http://localhost:3000"; // Replace with your Django backend URL
 
-  let sessionId = getCookie('session_id');
+  let sessionId = getCookie("session_id");
   if (!sessionId) {
     sessionId = generateUUID();
-    setCookie('session_id', sessionId, 365); // Set for 1 year
+    setCookie("session_id", sessionId, 365); // Set for 1 year
+    // setCookie('_ur', 'oelooooo', 365); // Set for 1 year
   }
 
   // Function to track generic events
@@ -125,10 +126,11 @@ traking.js
       session_id: sessionId,
       event_type: eventType,
       url: url,
-      utm_source: getParameterByName('utm_source') || '',
-      utm_medium: getParameterByName('utm_medium') || '',
+      utm_source: getParameterByName("utm_source") || "organic",
+      utm_medium: getParameterByName("utm_medium") || "",
+      user_id: getUserId() || "",
     };
-    sendDataToServer(`${API_ENDPOINT}/capture_event/`, data);
+    sendDataToServer(`${API_ENDPOINT}/data_events/capture_event/`, data);
   };
 
   // Function to track purchases
@@ -137,56 +139,60 @@ traking.js
       session_id: sessionId,
       product_id: productId,
       amount: amount,
-      utm_source: getParameterByName('utm_source') || '',
-      utm_medium: getParameterByName('utm_medium') || '',
+      utm_source: getParameterByName("utm_source") || "organic",
+      utm_medium: getParameterByName("utm_medium") || "",
     };
-    sendDataToServer(`${API_ENDPOINT}/capture_purchase/`, data);
+    sendDataToServer(`${API_ENDPOINT}/data_events/capture_purchase/`, data);
   };
 
   function sendDataToServer(endpoint, data) {
     fetch(endpoint, {
-      method: 'POST',
+      method: "POST",
       headers: {
-        'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8',
+        "Content-Type": "application/x-www-form-urlencoded;charset=UTF-8",
       },
       body: new URLSearchParams(data).toString(),
     });
   }
 
   function getCookie(name) {
-    let value = '; ' + document.cookie;
-    let parts = value.split('; ' + name + '=');
-    if (parts.length === 2) return parts.pop().split(';').shift();
+    let value = "; " + document.cookie;
+    let parts = value.split("; " + name + "=");
+    if (parts.length === 2) return parts.pop().split(";").shift();
   }
 
   function setCookie(name, value, days) {
-    let expires = '';
+    let expires = "";
     if (days) {
       let date = new Date();
       date.setTime(date.getTime() + days * 24 * 60 * 60 * 1000);
-      expires = '; expires=' + date.toUTCString();
+      expires = "; expires=" + date.toUTCString();
     }
-    document.cookie = name + '=' + (value || '') + expires + '; path=/';
+    document.cookie = name + "=" + (value || "") + expires + "; path=/";
   }
 
   function generateUUID() {
-    return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(
+    return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(
       /[xy]/g,
       function (c) {
         const r = (Math.random() * 16) | 0,
-          v = c === 'x' ? r : (r & 0x3) | 0x8;
+          v = c === "x" ? r : (r & 0x3) | 0x8;
         return v.toString(16);
-      },
+      }
     );
+  }
+  function getUserId() {
+    userId = getCookie("_ur");
+    return userId;
   }
 
   function getParameterByName(name, url = window.location.href) {
-    name = name.replace(/[\[\]]/g, '\\$&');
-    const regex = new RegExp('[?&]' + name + '(=([^&#]*)|&|#|$)'),
+    name = name.replace(/[\[\]]/g, "\\$&");
+    const regex = new RegExp("[?&]" + name + "(=([^&#]*)|&|#|$)"),
       results = regex.exec(url);
     if (!results) return null;
-    if (!results[2]) return '';
-    return decodeURIComponent(results[2].replace(/\+/g, ' '));
+    if (!results[2]) return "";
+    return decodeURIComponent(results[2].replace(/\+/g, " "));
   }
 })();
 ```
@@ -205,10 +211,10 @@ traking.js
 
 ```js
 // Tracking a page view
-trackEvent('page_view');
+trackEvent("page_view");
 
 // Tracking a purchase
-trackPurchase('product123', 99.99);
+trackPurchase("product123", 99.99);
 ```
 
 Replace `YOUR_DJANGO_DOMAIN` with your actual Django backend domain in the tracking.js. This setup should now allow you to capture both events and purchases on an external site and send the data to your Django analytics system.
@@ -218,7 +224,7 @@ Replace `YOUR_DJANGO_DOMAIN` with your actual Django backend domain in the track
 #### trackEvent function
 
 ```js
-trackEvent('page_view');
+trackEvent("page_view");
 ```
 
 Here's what this function does:
@@ -257,8 +263,8 @@ Similar to **trackEvent**, this function also captures UTM parameters from the U
 - For actions like button clicks, you'd use event listeners:
 
 ```js
-document.getElementById('buyButton').addEventListener('click', function () {
-  trackEvent('button_click');
+document.getElementById("buyButton").addEventListener("click", function () {
+  trackEvent("button_click");
 });
 ```
 
@@ -266,7 +272,7 @@ document.getElementById('buyButton').addEventListener('click', function () {
 
 ```js
 // Example after a successful purchase
-trackPurchase('productABC', 120.5);
+trackPurchase("productABC", 120.5);
 ```
 
 By following these steps, you'll capture user interactions and their journey on your site, from the landing page (potentially with UTM parameters for campaign tracking) to possible actions and purchases.
